@@ -1,0 +1,105 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# === Step 1: Construct base H and SC-LDPC matrix ===
+def construct_tailbiting_scldpc(H_base, L):
+    m, n = H_base.shape
+    H_full = np.zeros((L * m, L * n), dtype=int)
+    for i in range(L):
+        for offset in [0, 1]:
+            row_idx = (i + offset) % L
+            H_full[row_idx * m:(row_idx + 1) * m, i * n:(i + 1) * n] += H_base
+    return H_full % 2
+
+H_base = np.array([
+    [0,0,0,0,1,0,0,0,1,1,1,0,0,0,1,0,0,0,0,1],
+    [0,0,0,0,0,1,1,0,1,1,0,1,0,0,0,0,0,0,0,0],
+    [0,1,1,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,1,1],
+    [1,0,0,0,1,0,0,0,0,1,0,0,0,1,1,1,0,0,0,0],
+    [1,1,0,0,1,0,0,0,0,0,0,1,0,0,0,1,0,1,0,1],
+    [0,0,0,0,1,1,0,1,1,0,0,0,0,0,0,0,0,0,0,1],
+    [0,0,0,1,1,0,0,1,1,0,0,0,0,0,0,0,0,0,1,0],
+    [0,0,0,0,0,0,1,1,1,0,0,0,1,0,0,0,0,0,0,0],
+    [1,0,1,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0],
+    [0,0,1,0,1,0,1,0,0,1,0,0,0,0,0,0,0,1,1,0]
+], dtype=int)
+
+L = 4
+H_sc = construct_tailbiting_scldpc(H_base, L)
+
+# === Step 2: Belief Propagation Decoder ===
+def belief_propagation(H, llr, max_iters=50, damping=0.5, sure_bits_idx=None):
+    m, n = H.shape
+    M = {}
+    for i in range(m):
+        for j in np.where(H[i])[0]:
+            M[(i, j)] = llr[j]
+    for it in range(max_iters):
+        for i in range(m):
+            neighbors = np.where(H[i])[0]
+            for j in neighbors:
+                others = [M[(i, k)] for k in neighbors if k != j]
+                if others:
+                    sign = np.prod(np.sign(others))
+                    val = np.min(np.abs(others))
+                    M[(i, j)] = sign * val
+        new_llr = llr.copy()
+        for j in range(n):
+            neighbors = np.where(H[:, j])[0]
+            msgs = [M[(i, j)] for i in neighbors]
+            new_llr[j] += np.sum(msgs)
+        if sure_bits_idx is not None:
+            for j in sure_bits_idx:
+                new_llr[j] = 7.0 * np.sign(llr[j])
+        decoded = (new_llr < 0).astype(int)
+        if np.all(np.dot(H, decoded) % 2 == 0):
+            return decoded, it + 1
+        llr = damping * llr + (1 - damping) * new_llr
+    return decoded, max_iters
+
+# === Step 3: Trial for one SNR and #sure bits ===
+def run_trial(H_sc, snr_db, num_sure_bits=1, L=4):
+    n_block = 20
+    SNR_linear = 10 ** (snr_db / 10)
+    N0 = 1 / SNR_linear
+    sigma = np.sqrt(N0 / 2)
+    bits = np.random.randint(0, 2, size=n_block)
+    bpsk = 1 - 2 * bits
+    noise = sigma * np.random.randn(n_block)
+    received = bpsk + noise
+    llr = 2 * received / N0
+    llr_total = np.tile(llr, L)
+    sure_bits = list(range(num_sure_bits))
+    decoded, num_iters = belief_propagation(H_sc, llr_total, sure_bits_idx=sure_bits)
+    decoded_block = decoded[:n_block]
+    bit_errors = np.sum(decoded_block != bits)
+    frame_error = int(bit_errors > 0)
+    return bit_errors, frame_error, num_iters
+
+# === Step 4: Run Experiments and Plot ===
+def run_experiment_plot(H_sc, snr_list, sure_bits_list, trials=300):
+    plt.figure(figsize=(10, 6))
+    for num_sure in sure_bits_list:
+        ber_curve = []
+        for snr in snr_list:
+            total_be = 0
+            total_fe = 0
+            for _ in range(trials):
+                be, fe, _ = run_trial(H_sc, snr, num_sure)
+                total_be += be
+                total_fe += fe
+            ber = total_be / (trials * 20)
+            ber_curve.append(ber)
+        plt.semilogy(snr_list, ber_curve, label=f'{num_sure} sure bits')
+    plt.title("BER vs SNR (Tail-Biting SC-LDPC)")
+    plt.xlabel("SNR (dB)")
+    plt.ylabel("BER (log scale)")
+    plt.grid(True, which='both')
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+# === Step 5: Execute ===
+snr_list = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0]
+sure_bits_list = [1, 2, 4, 8]
+run_experiment_plot(H_sc, snr_list, sure_bits_list, trials=200)
