@@ -1,0 +1,618 @@
+options:
+  parameters:
+    author: ''
+    catch_exceptions: 'True'
+    category: '[GRC Hier Blocks]'
+    cmake_opt: ''
+    comment: ''
+    copyright: ''
+    description: ''
+    gen_cmake: 'On'
+    gen_linking: dynamic
+    generate_options: qt_gui
+    hier_block_src_path: '.:'
+    id: LPDC_Final
+    max_nouts: '0'
+    output_language: python
+    placement: (0,0)
+    qt_qss_theme: ''
+    realtime_scheduling: ''
+    run: 'True'
+    run_command: '{python} -u {filename}'
+    run_options: prompt
+    sizing_mode: fixed
+    thread_safe_setters: ''
+    title: LPDC_Final
+    window_size: (1000,1000)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 8]
+    rotation: 0
+    state: enabled
+
+blocks:
+- name: samp_rate
+  id: variable
+  parameters:
+    comment: ''
+    value: '100000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [176, 8.0]
+    rotation: 0
+    state: enabled
+- name: analog_noise_source_x_0
+  id: analog_noise_source_x
+  parameters:
+    affinity: ''
+    alias: ''
+    amp: '0.3'
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    noise_type: analog.GR_GAUSSIAN
+    seed: '0'
+    type: float
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [504, 488.0]
+    rotation: 0
+    state: enabled
+- name: analog_random_source_x_0
+  id: analog_random_source_x
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    max: '2'
+    maxoutbuf: '0'
+    min: '0'
+    minoutbuf: '0'
+    num_samps: '10000'
+    repeat: 'True'
+    type: byte
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [40, 336.0]
+    rotation: 0
+    state: enabled
+- name: blocks_add_xx_0
+  id: blocks_add_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '2'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [688, 360.0]
+    rotation: 0
+    state: enabled
+- name: blocks_throttle2_0
+  id: blocks_throttle2
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    ignoretag: 'True'
+    limit: auto
+    maximum: '0.1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samples_per_second: samp_rate
+    type: byte
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [216, 344.0]
+    rotation: 0
+    state: enabled
+- name: blocks_uchar_to_float_0
+  id: blocks_uchar_to_float
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1088, 288.0]
+    rotation: 0
+    state: enabled
+- name: digital_chunks_to_symbols_xx_0
+  id: digital_chunks_to_symbols_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    dimension: '1'
+    in_type: byte
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_ports: '1'
+    out_type: float
+    symbol_table: '[1, -1]'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [472, 360.0]
+    rotation: 0
+    state: enabled
+- name: epy_block_0
+  id: epy_block
+  parameters:
+    _source_code: "\"\"\"\nEmbedded Python Blocks:\n\nEach time this file is saved,\
+      \ GRC will instantiate the first class it finds\nto get ports and parameters\
+      \ of your block. The arguments to __init__  will\nbe the parameters. All of\
+      \ them are required to have default values!\n\"\"\"\n\nimport numpy as np\n\
+      from gnuradio import gr\n\nclass blk(gr.sync_block):\n    def __init__(self,\
+      \ trigger_len=8):\n        gr.sync_block.__init__(\n            self,\n    \
+      \        name='Trigger LLRs',\n            in_sig=[np.float32],\n          \
+      \  out_sig=[np.float32]\n        )\n        self.trigger_len = trigger_len\n\
+      \n    def work(self, input_items, output_items):\n        llrs = input_items[0].copy()\n\
+      \        for i in range(min(self.trigger_len, len(llrs))):\n            llrs[i]\
+      \ = 1000 * np.sign(llrs[i])  # force strong belief\n        output_items[0][:]\
+      \ = llrs\n        return len(output_items[0])\n"
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    trigger_len: '4'
+  states:
+    _io_cache: ('Trigger LLRs', 'blk', [('trigger_len', '8')], [('0', 'float', 1)],
+      [('0', 'float', 1)], '', ['trigger_len'])
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [944, 488.0]
+    rotation: 0
+    state: enabled
+- name: epy_block_1
+  id: epy_block
+  parameters:
+    _source_code: "\"\"\"\nEmbedded Python Blocks:\n\nEach time this file is saved,\
+      \ GRC will instantiate the first class it finds\nto get ports and parameters\
+      \ of your block. The arguments to __init__  will\nbe the parameters. All of\
+      \ them are required to have default values!\n\"\"\"\n\nimport numpy as np\n\
+      from gnuradio import gr\n\nclass blk(gr.sync_block):\n    \"\"\"LLR Calculator\
+      \ for BPSK over AWGN\"\"\"\n\n    def __init__(self, noise_power=0.5):\n   \
+      \     gr.sync_block.__init__(\n            self,\n            name='LLR Calc',\n\
+      \            in_sig=[np.float32],\n            out_sig=[np.float32]\n      \
+      \  )\n        self.N0 = noise_power  # N0 = 2\u03C3\xB2, you can adjust in GRC\
+      \ params if needed\n\n    def work(self, input_items, output_items):\n     \
+      \   y = input_items[0]\n        output_items[0][:] = 2 * y / self.N0\n     \
+      \   return len(output_items[0])\n\n"
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    noise_power: '0.4'
+  states:
+    _io_cache: ('LLR Calc', 'blk', [('noise_power', '0.5')], [('0', 'float', 1)],
+      [('0', 'float', 1)], 'LLR Calculator for BPSK over AWGN', [])
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [808, 368.0]
+    rotation: 0
+    state: enabled
+- name: epy_block_2
+  id: epy_block
+  parameters:
+    _source_code: "\"\"\"\nEmbedded Python Blocks:\n\nEach time this file is saved,\
+      \ GRC will instantiate the first class it finds\nto get ports and parameters\
+      \ of your block. The arguments to __init__  will\nbe the parameters. All of\
+      \ them are required to have default values!\n\"\"\"\n\nimport numpy as np\n\
+      from gnuradio import gr\n\ndef construct_tailbiting_scldpc(H_base, L):\n   \
+      \ m, n = H_base.shape\n    H_full = np.zeros((L * m, L * n), dtype=int)\n\n\
+      \    for i in range(L):\n        for offset in [0, 1]:\n            row = (i\
+      \ + offset) % L\n            H_full[row * m:(row + 1) * m,\n               \
+      \    i * n:(i + 1) * n] += H_base\n\n    return H_full % 2\n\nclass blk(gr.sync_block):\n\
+      \    def __init__(self):\n        gr.sync_block.__init__(\n            self,\n\
+      \            name='SC-LDPC Decoder',\n            in_sig=[np.float32],\n   \
+      \         out_sig=[np.uint8]\n        )\n        self.L = 4\n        self.n_block\
+      \ = 20\n        self.m_block = 10\n        self.H_base = np.array([\n      \
+      \      [0,0,0,0,1,0,0,0,1,1,1,0,0,0,1,0,0,0,0,1],\n            [0,0,0,0,0,1,1,0,1,1,0,1,0,0,0,0,0,0,0,0],\n\
+      \            [0,1,1,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,1,1],\n            [1,0,0,0,1,0,0,0,0,1,0,0,0,1,1,1,0,0,0,0],\n\
+      \            [1,1,0,0,1,0,0,0,0,0,0,1,0,0,0,1,0,1,0,1],\n            [0,0,0,0,1,1,0,1,1,0,0,0,0,0,0,0,0,0,0,1],\n\
+      \            [0,0,0,1,1,0,0,1,1,0,0,0,0,0,0,0,0,0,1,0],\n            [0,0,0,0,0,0,1,1,1,0,0,0,1,0,0,0,0,0,0,0],\n\
+      \            [1,0,1,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0],\n            [0,0,1,0,1,0,1,0,0,1,0,0,0,0,0,0,0,1,1,0]\n\
+      \        ])\n        self.H = construct_tailbiting_scldpc(self.H_base, self.L)\n\
+      \n    def work(self, input_items, output_items):\n        llr = input_items[0][:self.L\
+      \ * self.n_block]\n        decoded = self.decode(self.H, llr)\n        output_items[0][:self.L\
+      \ * self.n_block] = decoded.astype(np.uint8)\n        return self.L * self.n_block\n\
+      \n    def decode(self, H, llr, max_iters=50):\n        m, n = H.shape\n    \
+      \    M = {}\n        for i in range(m):\n            for j in np.where(H[i])[0]:\n\
+      \                M[(i, j)] = llr[j]\n\n        decoded = np.zeros(n, dtype=int)\n\
+      \n        for it in range(max_iters):\n            # Check node update\n   \
+      \         for i in range(m):\n                neighbors = np.where(H[i])[0]\n\
+      \                for j in neighbors:\n                    others = [M[(i, k)]\
+      \ for k in neighbors if k != j]\n                    if others:\n          \
+      \              sign = np.prod(np.sign(others))\n                        val\
+      \ = np.min(np.abs(others))\n                        M[(i, j)] = sign * val\n\
+      \n            # Bit node update\n            new_llr = llr.copy()\n        \
+      \    for j in range(n):\n                neighbors = np.where(H[:, j])[0]\n\
+      \                msgs = [M[(i, j)] for i in neighbors]\n                new_llr[j]\
+      \ += np.sum(msgs)\n\n            llr = 0.5 * llr + 0.5 * new_llr  # damping\n\
+      \            decoded = (llr < 0).astype(int)\n\n            satisfied = np.sum(np.dot(H,\
+      \ decoded) % 2 == 0)\n            print(f\"Iteration {it+1}: parity checks satisfied:\
+      \ {satisfied}/{m}\")\n\n            if satisfied == m:\n                print(\"\
+      \u2705 Decoding successful\")\n                break\n\n        return decoded\n\
+      \n"
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    _io_cache: ('SC-LDPC Decoder', 'blk', [], [('0', 'float', 1)], [('0', 'byte',
+      1)], '', [])
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1064, 440.0]
+    rotation: 0
+    state: enabled
+- name: epy_block_3
+  id: epy_block
+  parameters:
+    _source_code: "\"\"\"\nEmbedded Python Blocks:\n\nEach time this file is saved,\
+      \ GRC will instantiate the first class it finds\nto get ports and parameters\
+      \ of your block. The arguments to __init__  will\nbe the parameters. All of\
+      \ them are required to have default values!\n\"\"\"\n\nimport numpy as np\n\
+      from gnuradio import gr\n\nclass blk(gr.sync_block):\n    def __init__(self):\n\
+      \        gr.sync_block.__init__(\n            self,\n            name='BER Counter',\n\
+      \            in_sig=[np.uint8, np.uint8],  # [original, decoded]\n         \
+      \   out_sig=[np.float32]\n        )\n        self.count = 0\n        self.errors\
+      \ = 0\n\n    def work(self, input_items, output_items):\n        original =\
+      \ input_items[0]\n        decoded = input_items[1]\n        n = min(len(original),\
+      \ len(decoded))\n\n        errors = np.sum(original[:n] != decoded[:n])\n  \
+      \      self.count += n\n        self.errors += errors\n\n        ber = self.errors\
+      \ / self.count if self.count > 0 else 0.0\n        output_items[0][:n] = ber\
+      \  # Repeat BER for plotting\n        return n\n"
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    _io_cache: ('BER Counter', 'blk', [], [('0', 'byte', 1), ('1', 'byte', 1)], [('0',
+      'float', 1)], '', [])
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1000, 56.0]
+    rotation: 0
+    state: enabled
+- name: qtgui_time_sink_x_0
+  id: qtgui_time_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'True'
+    axislabels: 'True'
+    color1: blue
+    color10: dark blue
+    color2: red
+    color3: green
+    color4: black
+    color5: cyan
+    color6: magenta
+    color7: yellow
+    color8: dark red
+    color9: dark green
+    comment: ''
+    ctrlpanel: 'False'
+    entags: 'True'
+    grid: 'False'
+    gui_hint: ''
+    label1: Signal 1
+    label10: Signal 10
+    label2: Signal 2
+    label3: Signal 3
+    label4: Signal 4
+    label5: Signal 5
+    label6: Signal 6
+    label7: Signal 7
+    label8: Signal 8
+    label9: Signal 9
+    legend: 'True'
+    marker1: '-1'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    name: '""'
+    nconnections: '1'
+    size: '1024'
+    srate: samp_rate
+    stemplot: 'False'
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: float
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: Amplitude
+    ymax: '1.2'
+    ymin: '-0.2'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1256, 352.0]
+    rotation: 0
+    state: enabled
+- name: qtgui_time_sink_x_0_0
+  id: qtgui_time_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'True'
+    axislabels: 'True'
+    color1: blue
+    color10: dark blue
+    color2: red
+    color3: green
+    color4: black
+    color5: cyan
+    color6: magenta
+    color7: yellow
+    color8: dark red
+    color9: dark green
+    comment: ''
+    ctrlpanel: 'False'
+    entags: 'True'
+    grid: 'False'
+    gui_hint: ''
+    label1: Signal 1
+    label10: Signal 10
+    label2: Signal 2
+    label3: Signal 3
+    label4: Signal 4
+    label5: Signal 5
+    label6: Signal 6
+    label7: Signal 7
+    label8: Signal 8
+    label9: Signal 9
+    legend: 'True'
+    marker1: '-1'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    name: '""'
+    nconnections: '1'
+    size: '1024'
+    srate: samp_rate
+    stemplot: 'False'
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: float
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: Amplitude
+    ymax: '1.2'
+    ymin: '-0.2'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [816, 160.0]
+    rotation: 0
+    state: enabled
+- name: qtgui_time_sink_x_1
+  id: qtgui_time_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'True'
+    axislabels: 'True'
+    color1: blue
+    color10: dark blue
+    color2: red
+    color3: green
+    color4: black
+    color5: cyan
+    color6: magenta
+    color7: yellow
+    color8: dark red
+    color9: dark green
+    comment: ''
+    ctrlpanel: 'False'
+    entags: 'True'
+    grid: 'False'
+    gui_hint: ''
+    label1: Signal 1
+    label10: Signal 10
+    label2: Signal 2
+    label3: Signal 3
+    label4: Signal 4
+    label5: Signal 5
+    label6: Signal 6
+    label7: Signal 7
+    label8: Signal 8
+    label9: Signal 9
+    legend: 'True'
+    marker1: '-1'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    name: '""'
+    nconnections: '1'
+    size: '1024'
+    srate: samp_rate
+    stemplot: 'False'
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: float
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: Amplitude
+    ymax: '1'
+    ymin: '-1'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1176, 48.0]
+    rotation: 0
+    state: enabled
+
+connections:
+- [analog_noise_source_x_0, '0', blocks_add_xx_0, '1']
+- [analog_random_source_x_0, '0', blocks_throttle2_0, '0']
+- [analog_random_source_x_0, '0', epy_block_3, '0']
+- [blocks_add_xx_0, '0', epy_block_1, '0']
+- [blocks_add_xx_0, '0', qtgui_time_sink_x_0_0, '0']
+- [blocks_throttle2_0, '0', digital_chunks_to_symbols_xx_0, '0']
+- [blocks_uchar_to_float_0, '0', qtgui_time_sink_x_0, '0']
+- [digital_chunks_to_symbols_xx_0, '0', blocks_add_xx_0, '0']
+- [epy_block_0, '0', epy_block_2, '0']
+- [epy_block_1, '0', epy_block_0, '0']
+- [epy_block_2, '0', blocks_uchar_to_float_0, '0']
+- [epy_block_2, '0', epy_block_3, '1']
+- [epy_block_3, '0', qtgui_time_sink_x_1, '0']
+
+metadata:
+  file_format: 1
+  grc_version: 3.10.12.0
